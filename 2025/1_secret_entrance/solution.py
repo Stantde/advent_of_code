@@ -49,9 +49,8 @@ def generate_safe():
         n.append(value)
     return n
 def manage_state(current, next, zeros):
-    while ((current+next)<0):
-        next+=100
-        zeros+=1
+    while (next<0):
+        next+=100        
     new_position = (current + next) % 100    
 
     if (new_position == 0):
@@ -78,7 +77,7 @@ def main():
             second=zeros
             if ((second-first)>1): #crude correction pattern, but hey... it works. Will need to revist for the multizero bug.
                 zeros-=1
-            print(f"current: {current}, zeros: {zeros}")
+            # print(f"current: {current}, zeros: {zeros}")
     return zeros
 
 if __name__=='__main__':
