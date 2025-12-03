@@ -4,7 +4,7 @@ Name: Demetrius Stanton
 Date: 12-02-2025
 """
 """
-Outline: Based on command-line args, operate on list of nums, incrementing 
+Outline: Based on command-line args, input , incrementing
 counter each time the 'zero-th' position is the result of the operation.
 
 Expected outcome from test.txt is 3.
@@ -26,7 +26,7 @@ def get_file_data():
             file_output[count]=line.strip('\n')
             count+=1
     return file_output
-    
+
 def separate_IDs_by_commas(ID_ranges):
     ID=[]
     for key in ID_ranges.keys():
@@ -34,7 +34,7 @@ def separate_IDs_by_commas(ID_ranges):
         for value in value_ranges:
             if value:
                 ID.append(value)
-         
+
     return ID
 
 def validate_IDs(ID):
@@ -48,24 +48,27 @@ def validate_IDs(ID):
         report_error(f"first {first}, was not less than {last}!")
     #do I need to search for pallindromes?
     for i in range(lower_bound,upper_bound+1):
-        
+
         if str(i)[0]=='0':
-            report_error(f"found number starting with 0: {str(i)}") 
+            report_error(f"found number starting with 0: {str(i)}")
             invalid_IDs.append(i)
-        # invalid IDs are any ID which is made only of some sequence of digits repeated twice. 
+        # invalid IDs are any ID which is made only of some sequence of digits repeated twice.
         max_length=len(str(i))
-        for start in range(max_length):    
-            for end in range(max_length):
+        for start in range(max_length):
+            for end in range(start, max_length):
                 some_sequence_of_digits=str(i)[start:end]
-                try:
-                    if i==int(2*some_sequence_of_digits):
-                        if str(i) not in invalid_IDs:
-                            write_result(f"range: {ID} has invalid ID: {str(i)}")
-                            invalid_IDs.append(i)           
-                except ValueError:
-                    continue
-        
-     
+                for rnd in range(2, max_length+1):
+                    try:
+                        if i == 80808:
+                            ...
+                        if (i==int(rnd*some_sequence_of_digits)) and some_sequence_of_digits[0]!='0':
+                            if str(i) not in invalid_IDs:
+                                #write_result(f"range: {ID} has invalid ID: {str(i)}")
+                                invalid_IDs.append(i)
+                    except ValueError:
+                        continue
+
+
     return invalid_IDs
 
 def report_error(output="None added."):
@@ -85,15 +88,10 @@ def main():
     invalid_IDs=[]
     current_sum=0
     for ID_range in ID:
-        for entry in validate_IDs(ID_range):            
-            if (entry not in invalid_IDs) and (len(str(entry))%2==0):
+        for entry in validate_IDs(ID_range):
+            if (entry not in invalid_IDs):
                 invalid_IDs.append(entry)
-        '''invalid_IDs.append(validate_IDs(ID_range)) #These refer to the same array, yes?
-        #will invalid ids require further processing before summation?
-    value_list=[]
-    for entry in invalid_IDs:
-        if entry not in value_list:
-            value_list.append(entry)'''
+                write_result(f"range: {ID_range} has invalid ID: {str(entry)}")
     current_sum=sum(invalid_IDs)
     return str(current_sum)
 
