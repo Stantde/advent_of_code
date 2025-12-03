@@ -27,9 +27,9 @@ There are many batteries in front of you. Find the maximum joltage possible from
 
 To begin, get your puzzle input.
 
-Answer: 
- 
-puzzle answer was 17144.
+Answer:
+
+||puzzle answer was 17144.||
 
 The first half of this puzzle is complete! It provides one gold star: *
 
