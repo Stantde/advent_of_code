@@ -22,6 +22,25 @@ def get_file_data(): # returns dict with key=line_number,value=line_text
 
     return file_output
 
+<<<<<<< HEAD
+=======
+def evaluate(l):
+    count=0
+    row_length=len(l)
+    col_length=len(l[0])
+    roll='@'
+    for r in range(row_length):
+        for c in range(col_length):
+            if l[r][c] == roll:
+                l[r][c].replace(roll,'x')
+                count+=1
+
+
+
+    write_result(f"Given: {l},\nFound max: {str(count)}")
+    return count
+
+>>>>>>> acc7cbb (Initial guess of 1602 for part 1.)
 def report_error(output="None added."):
     with open("error.log", 'a') as err:
         err.write(f"{output}\n")
