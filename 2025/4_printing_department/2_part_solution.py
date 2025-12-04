@@ -42,24 +42,31 @@ def main():
     for line in range(row_length):
         file_data[line]=list(file_data[line])
     roll='@'
-    for r in range(row_length):
-        for c in range(col_length):
-            if file_data[r][c] == roll:
-                # Count number of adjacent rolls
-                count=0
-                for a in range(-1,2):
-                    for b in range(-1,2):
-                        if a==0 and b==0:
-                            continue
-                        if a+r < 0 or a+r>row_length-1:
-                            continue
-                        if b+c < 0 or b+c>col_length-1:
-                            continue
-                        if file_data[a+r][b+c] in [roll,'x']:
-                            count+=1
-                if count<4:
-                    file_data[r][c]='x'
-                    current_sum+=1
+    changed=True
+    while changed:
+        changed=False
+        for r in range(row_length):
+            for c in range(col_length):
+                if file_data[r][c]=='x':
+                    file_data[r][c]='.'
+                    changed=True
+                if file_data[r][c] == roll:
+                    # Count number of adjacent rolls
+                    count=0
+                    for a in range(-1,2):
+                        for b in range(-1,2):
+                            if a==0 and b==0:
+                                continue
+                            if a+r < 0 or a+r>row_length-1:
+                                continue
+                            if b+c < 0 or b+c>col_length-1:
+                                continue
+                            if file_data[a+r][b+c] in [roll,'x']:
+                                count+=1
+                    if count<4:
+                        file_data[r][c]='x'
+                        changed=True
+                        current_sum+=1
 
     return str(current_sum)
 
