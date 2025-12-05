@@ -1,7 +1,7 @@
 """
 Day 4 Advent of Code 2025
 Name: Demetrius Stanton
-Date: 12-04-2025
+Date: 12-05-2025
 """
 """
 Outline: Check each position of the paper
@@ -27,7 +27,7 @@ def get_file_data(): # returns dict with key=line_number,value=line_text
                     continue
             if line == '\n':
                 switch= True
-                continue
+                break
             fresh_ingredient_id_ranges[count]=line.strip('\n')
             count+=1
 
@@ -70,13 +70,38 @@ def main():
         new_ranges.append(int(lower))
         new_ranges.append(int(upper))
         id_ranges[key]=new_ranges
-    for ingredient in ids.keys():
-        for key in id_ranges.keys():
-            if (int(ingredient)>=id_ranges[key][0] ) and (int(ingredient)<=id_ranges[key][1] ):
-                if ids[ingredient]=='u':
-                    current_sum+=1
-                ids[ingredient]='f'
-                print(f"{ingredient} is fresh, in {key}.")
+    current_ranges = []
+    for main_key in range(len(id_ranges.keys())):
+        add_me=True
+        correction=0
+        c=id_ranges[main_key][0]
+        d=id_ranges[main_key][1]
+        if current_ranges:#cd
+            for r in current_ranges:#ab
+                a=r[0]
+                b=r[1]
+                if (a<c<b)and(a<d<b): #ab includes cd
+                    add_me=False
+                    break
+                elif (c<a<d)and(c<b<d):#a-b bw cd
+                    correction= -1*(b-a+1)
+                elif (c<a<d and d<b):# a only bw cd
+                    if a-1<0:
+                        raise UnexpectedExpectedError
+                    id_ranges[main_key][1]=a-1
+                    d=id_ranges[main_key][1]
+                elif (c<b<d and a<c):# b bwt cd
+                    id_ranges[main_key][0]=b+1
+                    c=id_ranges[main_key][0]
+                else:
+                    ...
+            if add_me:
+                current_sum+=id_ranges[main_key][1]-id_ranges[main_key][0] +1 + correction
+                current_ranges.append(id_ranges[main_key])
+
+        else:
+            current_ranges.append(id_ranges[main_key])
+            current_sum+=id_ranges[main_key][1]-id_ranges[main_key][0] +1
 
 
     return str(current_sum)
