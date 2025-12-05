@@ -15,12 +15,22 @@ def get_file_data(): # returns dict with key=line_number,value=line_text
         print(f"Please include filename in command-line.\nEx: {sys.argv[0]} \
         test.txt")
         sys.exit(2)
-    file_output=[]
+    fresh_ingredient_id_ranges={}
+    available_ingredient_ids={}
+    switch=False
+    count=0
     with open(filename,'r') as f:
         for line in f:
-            file_output.append(line.strip('\n'))
+            if switch:
+                available_ingredient_ids[line.strip('\n')]='u'
+                continue
+            if line == '\n':
+                switch= True
+                continue
+            fresh_ingredient_id_ranges[count]=line.strip('\n')
+            count+=1
 
-    return file_output
+    return fresh_ingredient_id_ranges,available_ingredient_ids
 
 def evaluate(l):
     count=0
@@ -50,32 +60,23 @@ def write_result(output="Args not passed."):
     return
 
 def main():
-    file_data=get_file_data()
-    max_list=[]
+    id_ranges,ids=get_file_data()
     current_sum=0
-    row_length=len(file_data)
-    col_length=len(file_data[0])
-    for line in range(row_length):
-        file_data[line]=list(file_data[line])
-    roll='@'
-    for r in range(row_length):
-        for c in range(col_length):
-            if file_data[r][c] == roll:
-                # Count number of adjacent rolls
-                count=0
-                for a in range(-1,2):
-                    for b in range(-1,2):
-                        if a==0 and b==0:
-                            continue
-                        if a+r < 0 or a+r>row_length-1:
-                            continue
-                        if b+c < 0 or b+c>col_length-1:
-                            continue
-                        if file_data[a+r][b+c] in [roll,'x']:
-                            count+=1
-                if count<4:
-                    file_data[r][c]='x'
+    for key in id_ranges.keys():
+        lower=id_ranges[key].split('-')[0]
+        upper=id_ranges[key].split('-')[1]
+        new_ranges=[]
+        for fresh_id in range(int(lower), int(upper)+1):
+            new_ranges.append(fresh_id)
+        id_ranges[key]=new_ranges
+    for ingredient in ids.keys():
+        for key in id_ranges.keys():
+            if int(ingredient) in id_ranges[key]:
+                if ids[ingredient]=='u':
                     current_sum+=1
+                ids[ingredient]='f'
+                print(f"{ingredient} is fresh, in {key}.")
+
 
     return str(current_sum)
 
