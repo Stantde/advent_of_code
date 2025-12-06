@@ -4,7 +4,9 @@ Name: Demetrius Stanton
 Date: 12-05-2025
 """
 """
-Outline: Check each position of the paper
+Outline: The initial plan did not work. So I will now attempt to implement 
+an interval merging algorithm, then proceed to calculate the count of the IDs 
+in a given interval.
 """
 import sys
 
