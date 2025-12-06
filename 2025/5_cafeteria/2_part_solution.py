@@ -35,21 +35,92 @@ def get_file_data(): # returns dict with key=line_number,value=line_text
 
     return fresh_ingredient_id_ranges,available_ingredient_ids
 
-def evaluate(l):
-    count=0
-    row_length=len(l)
-    col_length=len(l[0])
-    roll='@'
-    for r in range(row_length):
-        for c in range(col_length):
-            if l[r][c] == roll:
-                l[r][c].replace(roll,'x')
-                count+=1
+def merge_intervals(r):
+    """
+    Docstring for merge_intervals
+    
+    :param r: Description r is is a dict containing id ranges which may or may
+    not have overlapping ranges. The first task is to determine if the ranges 
+    overlap. If two ranges overlap, merge them into a single range, updating 
+    the initial range, and removing the second.
 
+    # Using a default value to prevent KeyError
+    removed_value_safe = my_dict.pop('grape', None) # 'grape' does not exist
+    print(f"Removed value (safe): {removed_value_safe}")
+    print(my_dict)
+    """
+    overlap=True
+    while overlap:
+        current_ranges=[]    
+        overlap=False
+        for primary in list(r.keys()):
+            c=r[primary][0]
+            d=r[primary][1]
+            if current_ranges:
+                updated_range=False
+                for idr in current_ranges:
+                    a=idr[0]
+                    b=idr[1]
+                    if (a<=c<=b)and(a<=d<=b): #ab includes cd
+                        # the range under evaluation already exists. 
+                        # remove the current range's key from dict 
+                        # and mark changed.
+                        # dont add to currrent_range
+                        r.pop(primary, None)
+                        overlap=True
+                        updated_range=True
+                        break
+                    elif (c<=a<=d)and(c<=b<=d):# cd includes ab
+                        # the range under evaluation completely contains a previous range.
+                        # this is a curious condition. I feel like changing the prior range can affect any check last performed.
+                        # If it does, wouldn't those changes be caught on later iterations?
+                        # update previous range to match current range both in primary dict and current range.
+                        for key, value in r.items():
+                            if value == idr:
+                                r[key]=r[primary]
+                                r.pop(primary, None)
+                                overlap=True
+                                updated_range=True
+                                break
+                        
+                    elif (c<=a<=d and d<=b):# a only bw cd
+                        # Extend range of cd to cb
+                        d=b
+                        r[primary][1]=b
+                        overlap=True
+                        current_ranges.append([c,d])
+                        updated_range=True                        
+                        break
+                        
+                    elif (c<=b<=d and a<=c):# b bwt cd
+                        # Extend range of cd to ad
+                        c=a
+                        #r[primary][0]=a
+                        overlap=True
+                        current_ranges.append([c,d])
+                        updated_range=True
+                        break
+                if not updated_range:
+                    current_ranges.append(r[primary])    
 
-
-    write_result(f"Given: {l},\nFound max: {str(count)}")
-    return count
+            else:
+                current_ranges.append(r[primary])
+        current_ranges.sort()
+        count = 0
+        list_to_remove=[]
+        for sr in range(len(current_ranges)-1):
+            if current_ranges[sr][0]==current_ranges[sr+1] [0]:
+                current_ranges[sr][1]=max(current_ranges[sr+1] [1],current_ranges[sr][1])
+                current_ranges[sr+1][1]=max(current_ranges[sr+1] [1],current_ranges[sr][1])
+                list_to_remove.append(current_ranges[sr])
+        for i in list_to_remove:
+            current_ranges.remove(i)
+        r={}
+        count=0
+        for i in current_ranges:
+            r[count]=current_ranges[count]
+            count+=1
+    return r
 
 def report_error(output="None added."):
     with open("error.log", 'a') as err:
@@ -72,38 +143,9 @@ def main():
         new_ranges.append(int(lower))
         new_ranges.append(int(upper))
         id_ranges[key]=new_ranges
-    current_ranges = []
+    id_ranges=merge_intervals(id_ranges)
     for main_key in range(len(id_ranges.keys())):
-        add_me=True
-        correction=0
-        c=id_ranges[main_key][0]
-        d=id_ranges[main_key][1]
-        if current_ranges:#cd
-            for r in current_ranges:#ab
-                a=r[0]
-                b=r[1]
-                if (a<c<b)and(a<d<b): #ab includes cd
-                    add_me=False
-                    break
-                elif (c<a<d)and(c<b<d):#a-b bw cd
-                    correction= -1*(b-a+1)
-                elif (c<a<d and d<b):# a only bw cd
-                    if a-1<0:
-                        raise UnexpectedExpectedError
-                    id_ranges[main_key][1]=a-1
-                    d=id_ranges[main_key][1]
-                elif (c<b<d and a<c):# b bwt cd
-                    id_ranges[main_key][0]=b+1
-                    c=id_ranges[main_key][0]
-                else:
-                    ...
-            if add_me:
-                current_sum+=id_ranges[main_key][1]-id_ranges[main_key][0] +1 + correction
-                current_ranges.append(id_ranges[main_key])
-
-        else:
-            current_ranges.append(id_ranges[main_key])
-            current_sum+=id_ranges[main_key][1]-id_ranges[main_key][0] +1
+        current_sum+=id_ranges[main_key][1]-id_ranges[main_key][0] +1
 
 
     return str(current_sum)
