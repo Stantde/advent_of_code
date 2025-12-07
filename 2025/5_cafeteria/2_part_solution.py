@@ -18,22 +18,14 @@ def get_file_data(): # returns dict with key=line_number,value=line_text
         test.txt")
         sys.exit(2)
     fresh_ingredient_id_ranges={}
-    available_ingredient_ids={}
-    switch=False
     count=0
     with open(filename,'r') as f:
         for line in f:
-            if switch:
-                if line:
-                    available_ingredient_ids[line.strip('\n')]='u'
-                    continue
             if line == '\n':
-                switch= True
                 break
             fresh_ingredient_id_ranges[count]=line.strip('\n')
             count+=1
-
-    return fresh_ingredient_id_ranges,available_ingredient_ids
+    return fresh_ingredient_id_ranges
 
 def merge_intervals(r):
     """
@@ -49,79 +41,56 @@ def merge_intervals(r):
     print(f"Removed value (safe): {removed_value_safe}")
     print(my_dict)
     """
+    list_of_keys=[]
+    for key in r.keys():
+        list_of_keys.append(key)    
     overlap=True
     while overlap:
-        current_ranges=[]    
         overlap=False
-        for primary in list(r.keys()):
-            c=r[primary][0]
-            d=r[primary][1]
-            if current_ranges:
-                updated_range=False
-                for idr in current_ranges:
-                    a=idr[0]
-                    b=idr[1]
-                    if (a<=c<=b)and(a<=d<=b): #ab includes cd
-                        # the range under evaluation already exists. 
-                        # remove the current range's key from dict 
-                        # and mark changed.
-                        # dont add to currrent_range
-                        r.pop(primary, None)
-                        overlap=True
-                        updated_range=True
-                        break
-                    elif (c<=a<=d)and(c<=b<=d):# cd includes ab
-                        # the range under evaluation completely contains a previous range.
-                        # this is a curious condition. I feel like changing the prior range can affect any check last performed.
-                        # If it does, wouldn't those changes be caught on later iterations?
-                        # update previous range to match current range both in primary dict and current range.
-                        for key, value in r.items():
-                            if value == idr:
-                                r[key]=r[primary]
-                                r.pop(primary, None)
-                                overlap=True
-                                updated_range=True
-                                break
-                        
-                    elif (c<=a<=d and d<=b):# a only bw cd
-                        # Extend range of cd to cb
-                        d=b
-                        r[primary][1]=b
-                        overlap=True
-                        current_ranges.append([c,d])
-                        updated_range=True                        
-                        break
-                        
-                    elif (c<=b<=d and a<=c):# b bwt cd
-                        # Extend range of cd to ad
-                        c=a
-                        #r[primary][0]=a
-                        overlap=True
-                        current_ranges.append([c,d])
-                        updated_range=True
-                        break
-                if not updated_range:
-                    current_ranges.append(r[primary])    
-
+        r=sort_my_dict(r)
+        keys_to_remove=[]        
+        for index in range(len(list_of_keys)-1):
+            Rc=[]
+            # Which is larger, r[index] or r[index+1]?
+            if ((r[list_of_keys[index]][1]-r[list_of_keys[index]][0])>(r[list_of_keys[index+1]][1]-r[list_of_keys[index+1]][0])): # r[index] is greater
+                rai=list_of_keys[index]
+                rbi=list_of_keys[index+1]
+                Ra=r[rai]
+                Rb=r[rbi]
+                
             else:
-                current_ranges.append(r[primary])
-        current_ranges.sort()
-        count = 0
-        list_to_remove=[]
-        for sr in range(len(current_ranges)-1):
-            if current_ranges[sr][0]==current_ranges[sr+1] [0]:
-                current_ranges[sr][1]=max(current_ranges[sr+1] [1],current_ranges[sr][1])
-                current_ranges[sr+1][1]=max(current_ranges[sr+1] [1],current_ranges[sr][1])
-                list_to_remove.append(current_ranges[sr])
-        for i in list_to_remove:
-            current_ranges.remove(i)
-        r={}
-        count=0
-        for i in current_ranges:
-            r[count]=current_ranges[count]
-            count+=1
+                rai=list_of_keys[index+1]
+                rbi=list_of_keys[index]
+                Rb=r[rbi]
+                Ra=r[rai]            
+            # Ra is the larger of the two intervals
+            if (Ra[0]<Rb[0]<Ra[1]) or (Ra[0]<Rb[1]<Ra[1]):             
+                if not overlap:
+                    overlap=True
+                    # Calculate resultant range, and replace Ra with Rc.
+                    Rc.append(min(Ra[0],Rb[0]))
+                    Rc.append(max(Ra[1],Rb[1]))
+                    r[rai]=Rc
+                    keys_to_remove.append(rbi)
+        if overlap:
+            for ktr in keys_to_remove:
+                r.pop(ktr)
+                list_of_keys.remove(ktr)
+    
     return r
 
+def sort_my_dict(r):
+    swapped = True
+    unsorted_list=[]
+    for key in r.keys():
+        unsorted_list.append(r[key])
+    unsorted_list.sort()
+    sorted_list=unsorted_list
+    keylist=list(r.keys())
+    for keylistindex in range(len(r.keys())):
+        r[keylist[keylistindex]]=sorted_list[keylistindex]
+    
+    return r
 def report_error(output="None added."):
     with open("error.log", 'a') as err:
         err.write(f"{output}\n")
@@ -134,7 +103,7 @@ def write_result(output="Args not passed."):
     return
 
 def main():
-    id_ranges,ids=get_file_data()
+    id_ranges=get_file_data()
     current_sum=0
     for key in id_ranges.keys():
         lower=id_ranges[key].split('-')[0]
@@ -144,7 +113,7 @@ def main():
         new_ranges.append(int(upper))
         id_ranges[key]=new_ranges
     id_ranges=merge_intervals(id_ranges)
-    for main_key in range(len(id_ranges.keys())):
+    for main_key in id_ranges.keys():
         current_sum+=id_ranges[main_key][1]-id_ranges[main_key][0] +1
 
 
@@ -152,3 +121,6 @@ def main():
 
 if __name__=='__main__':
     print(f"The sum is: {main()}.")
+
+# 432577839375365 Too high.
+# 363576316169882 That's not right.
