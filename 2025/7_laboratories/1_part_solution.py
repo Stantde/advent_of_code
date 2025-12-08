@@ -1,10 +1,10 @@
 """
-Day 4 Advent of Code 2025
+Day 7 Advent of Code 2025
 Name: Demetrius Stanton
-Date: 12-04-2025
+Date: 12-07-2025
 """
 """
-Outline: Check each position of the paper
+
 """
 import sys
 
@@ -15,39 +15,11 @@ def get_file_data(): # returns dict with key=line_number,value=line_text
         print(f"Please include filename in command-line.\nEx: {sys.argv[0]} \
         test.txt")
         sys.exit(2)
-    fresh_ingredient_id_ranges={}
-    available_ingredient_ids={}
-    switch=False
-    count=0
+    lines=[]
     with open(filename,'r') as f:
         for line in f:
-            if switch:
-                if line:
-                    available_ingredient_ids[line.strip('\n')]='u'
-                    continue
-            if line == '\n':
-                switch= True
-                continue
-            fresh_ingredient_id_ranges[count]=line.strip('\n')
-            count+=1
-
-    return fresh_ingredient_id_ranges,available_ingredient_ids
-
-def evaluate(l):
-    count=0
-    row_length=len(l)
-    col_length=len(l[0])
-    roll='@'
-    for r in range(row_length):
-        for c in range(col_length):
-            if l[r][c] == roll:
-                l[r][c].replace(roll,'x')
-                count+=1
-
-
-
-    write_result(f"Given: {l},\nFound max: {str(count)}")
-    return count
+            lines.append(line.strip('\n'))
+    return lines
 
 def report_error(output="None added."):
     with open("error.log", 'a') as err:
@@ -61,15 +33,19 @@ def write_result(output="Args not passed."):
     return
 
 def main():
-    id_ranges,ids=get_file_data()
-    current_sum=0
-    for key in id_ranges.keys():
-        lower=id_ranges[key].split('-')[0]
-        upper=id_ranges[key].split('-')[1]
-        new_ranges=[]
-        new_ranges.append(int(lower))
-        new_ranges.append(int(upper))
-        id_ranges[key]=new_ranges
+    tachyon_field=get_file_data()
+    beam='|'
+    for step in tachyon_field:
+        if 'S' in step:
+            starting_position=step.index('S')
+            current_position=starting_position
+            next_position=current_position
+            print(f"{step.replace('S',beam)}")
+            continue
+        if step[next_position]=='.':
+            step.replace=beam
+        elif step[next_position]=='^':
+            ...
     for ingredient in ids.keys():
         for key in id_ranges.keys():
             if (int(ingredient)>=id_ranges[key][0] ) and (int(ingredient)<=id_ranges[key][1] ):
